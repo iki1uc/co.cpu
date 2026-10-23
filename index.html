@@ -1,61 +1,615 @@
-<div id="xTOM-mainboard">
-<pre>
-┌──────────────────────────────────────────────┐
-│                  xTOM MAINBOARD              │
-├──────────────────────────────────────────────┤
- TMP-BUS (A–F) → IX-Input
- RE-BUS (Ω1–Ω5) → X4-Terminal
- NET-BUS (N1–N3) → Routing TMP↔RE
- LINK-BUS (L1–L3) → Routing HDF↔Homepage
- HDF-BUS (H1–H6) → XI-Cache
- AXIS-BUS (X1–Z3) → 360° / 100 Achsen
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🧥 AXIOM · STOFF · TANZ · KONSEQUENZIERT</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:radial-gradient(ellipse at 50% 50%,#0a0a1a,#000);color:#c8d0d0;font-family:'Consolas','Courier New',monospace;min-height:100vh;display:flex;justify-content:center;align-items:center;padding:16px}
+.container{max-width:900px;width:100%;background:rgba(10,10,20,0.3);border:1px solid rgba(0,204,255,0.05);border-radius:20px;padding:24px;backdrop-filter:blur(10px);box-shadow:0 0 100px rgba(0,0,0,0.8)}
+.header{text-align:center;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.02);margin-bottom:16px}
+.header h1{font-size:22px;background:linear-gradient(90deg,#ffaa00,#ff66ff,#00ccff,#00ff88);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:4px}
+.header .sub{color:#445555;font-size:10px;letter-spacing:3px;margin-top:4px}
+.header .sub span{color:#ff66ff}
 
- Position-Engine → 3.6° Index
- Rotation-Engine → virtuelle Rotation
- Haltung-Engine → Achse + Station
+.canvas-wrap{position:relative;width:100%;max-width:600px;margin:0 auto;aspect-ratio:1/1;background:rgba(0,0,0,0.4);border-radius:16px;border:1px solid rgba(255,255,255,0.02);overflow:hidden}
+#stoffCanvas{width:100%;height:100%;display:block}
 
- All-In: TMP → IX → XI → X4
- All-Out: X4 → XI → IX → TMP
-└──────────────────────────────────────────────┘
-</pre>
+.info-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:12px}
+@media(max-width:700px){.info-grid{grid-template-columns:repeat(3,1fr)}}
+.info-card{background:rgba(10,10,20,0.3);border:1px solid rgba(255,255,255,0.02);border-radius:8px;padding:8px 4px;text-align:center;font-size:9px}
+.info-card .value{font-size:16px;font-weight:bold;font-family:monospace;font-variant-numeric:tabular-nums}
+.info-card .label{color:#445555;font-size:7px;text-transform:uppercase;letter-spacing:1px;margin-top:2px}
+
+.controls{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:12px}
+.controls button{background:rgba(20,35,35,0.2);color:#668888;border:1px solid rgba(255,255,255,0.02);padding:6px 16px;border-radius:18px;cursor:pointer;font-family:inherit;font-size:9px;transition:all 0.3s;letter-spacing:.05em}
+.controls button:hover{background:rgba(40,80,70,0.1);color:#aaeedd}
+.controls button.active{background:rgba(40,80,70,0.08);color:#00ff88;border-color:rgba(0,255,136,0.2)}
+.controls button.puls{color:#ff66ff;border-color:rgba(255,102,255,0.1)}
+.controls button.winkel{color:#ffaa00;border-color:rgba(255,170,0,0.1)}
+.controls button.proof{color:#00ccff;border-color:rgba(0,204,255,0.1)}
+.controls button.pose{color:#00ff88;border-color:rgba(0,255,136,0.1)}
+
+.status-bar{display:flex;justify-content:space-between;padding:6px 12px;margin-top:10px;background:rgba(0,0,0,0.2);border-radius:8px;font-size:8px;color:#445555;border:1px solid rgba(255,255,255,0.01)}
+.status-bar b{color:#88ddbb;font-weight:normal}
+
+.footer{text-align:center;margin-top:10px;color:#222;font-size:8px;letter-spacing:2px}
+.footer span{color:#ff66ff}
+
+/* Proof Modal */
+.proof-modal{position:fixed;inset:0;background:rgba(0,0,0,0.9);display:flex;justify-content:center;align-items:center;z-index:9999;backdrop-filter:blur(20px);padding:20px}
+.proof-modal .inner{text-align:center;padding:32px;border:1px solid rgba(255,170,0,0.15);border-radius:20px;background:rgba(10,10,20,0.7);max-width:480px;width:100%}
+.proof-modal .em{font-size:42px;color:#ffaa00}
+.proof-modal .title{color:#ffaa00;font-size:18px;margin:10px 0;letter-spacing:4px}
+.proof-modal .vals{color:#88ddbb;font-size:12px;line-height:1.9;text-align:left;display:inline-block;font-family:monospace}
+.proof-modal .vals b{color:#ffd700;font-weight:900}
+.proof-modal .foot{color:#445555;font-size:9px;margin-top:14px;border-top:1px solid rgba(255,255,255,0.03);padding-top:12px;letter-spacing:.15em}
+.proof-modal button{margin-top:14px;background:rgba(20,35,35,0.4);color:#88ddbb;border:1px solid rgba(255,255,255,0.05);padding:8px 24px;border-radius:18px;cursor:pointer;font-family:inherit;font-size:10px;letter-spacing:.15em}
+.proof-modal button:hover{background:rgba(40,80,70,0.3);color:#fff}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<div class="header">
+  <h1>🧥 AXIOM · STOFF · TANZ</h1>
+  <div class="sub">SCHLAPPE HOSEN & HEMDEN · <span>AN EINEM KÖRPER</span> · NUANCEN · PULS</div>
 </div>
+
+<div class="canvas-wrap">
+  <canvas id="stoffCanvas"></canvas>
+</div>
+
+<div class="info-grid">
+  <div class="info-card">
+    <div class="value" id="pulseDisplay" style="color:#ff66ff">0</div>
+    <div class="label">PULS</div>
+  </div>
+  <div class="info-card">
+    <div class="value" id="winkelDisplay" style="color:#ffaa00">0°</div>
+    <div class="label">WINKEL</div>
+  </div>
+  <div class="info-card">
+    <div class="value" id="nuanceDisplay" style="color:#00ccff">0</div>
+    <div class="label">NUANCE</div>
+  </div>
+  <div class="info-card">
+    <div class="value" id="achseDisplay" style="color:#00ff88">0</div>
+    <div class="label">ACHSE</div>
+  </div>
+  <div class="info-card">
+    <div class="value" id="poseDisplay" style="color:#ffd700">0</div>
+    <div class="label">POSE</div>
+  </div>
+</div>
+
+<div class="controls">
+  <button id="btnStart" class="active">▶ START</button>
+  <button id="btnPuls" class="puls">💓 PULS +</button>
+  <button id="btnWinkel" class="winkel">↗ WINKEL +15°</button>
+  <button id="btnPose" class="pose">◐ POSE</button>
+  <button id="btnProof" class="proof">🔮 PROOF</button>
+  <button id="btnReset">⟲ RESET</button>
+</div>
+
+<div class="status-bar">
+  <span>🧥 <span id="statusText">tanzt</span></span>
+  <span>🎯 Nuance <b id="nuanceStatus">0</b></span>
+  <span>⚡ Pose <b id="poseStatus">0</b></span>
+  <span>⏱ <b id="timeStatus">00:00</b></span>
+</div>
+
+<div class="footer">
+  <span>🧥</span> AXIOM · STOFF · TANZ · KONSEQUENZIERT · <span>wieimmer4u</span>
+</div>
+
+</div>
+
 <script>
-(async function(){
+'use strict';
 
-    const xTOM_ID = {
-        name: "xTOM",
-        type: "QI-IQQ-Respo",
-        version: "1.0.0",
-        layers: ["B","H","T"],
-        pipeline: [3,6,12],
-        verify: true,
-        status: "Superior-to-TOM"
+/* ============================================================
+   AXIOM · STOFF · TANZ · KONSEQUENZIERT
+   Die Kleidung hängt an einem tanzenden Skelett.
+   Der Puls läuft durch alle Gelenke.
+   Die Achse trägt die Rotation.
+   ============================================================ */
+
+const canvas = document.getElementById('stoffCanvas');
+const ctx = canvas.getContext('2d');
+
+let running = true;
+let time = 0;
+let pulsPhase = 0;
+let winkelOffset = 0;
+let poseIdx = 0;
+let pulsBoost = 0;   // temporärer Boost durch PULS-Button
+let pulseForce = 0;  // decays
+
+// 4 Posen: tanzt in verschiedenen Körperhaltungen
+const POSES = [
+  { name:'OFFEN',  hipY: 0.15, shoulderY:-0.30, armL: -0.35, armR: 0.35, lean: 0.0 },
+  { name:'LINKS',  hipY: 0.15, shoulderY:-0.30, armL: -0.55, armR: 0.20, lean: -0.12 },
+  { name:'RECHTS', hipY: 0.15, shoulderY:-0.30, armL: -0.20, armR: 0.55, lean: 0.12 },
+  { name:'SPRUNG', hipY: 0.10, shoulderY:-0.35, armL: -0.45, armR: 0.45, lean: 0.0 }
+];
+
+// Körper-Skelett: 10 Gelenke in relativen Koordinaten (-1..1)
+const SKELET = {
+  kopf:     { x: 0,     y:-0.55 },
+  hals:     { x: 0,     y:-0.40 },
+  schulterL:{ x:-0.20,  y:-0.30 },
+  schulterR:{ x: 0.20,  y:-0.30 },
+  ellbogenL:{ x:-0.35,  y:-0.10 },
+  ellbogenR:{ x: 0.35,  y:-0.10 },
+  handL:    { x:-0.40,  y: 0.10 },
+  handR:    { x: 0.40,  y: 0.10 },
+  huefte:   { x: 0,     y: 0.15 },
+  huefteL:  { x:-0.15,  y: 0.15 },
+  huefteR:  { x: 0.15,  y: 0.15 },
+  knieL:    { x:-0.15,  y: 0.40 },
+  knieR:    { x: 0.15,  y: 0.40 },
+  fussL:    { x:-0.15,  y: 0.65 },
+  fussR:    { x: 0.15,  y: 0.65 }
+};
+
+// Verbindungen (Knochen)
+const KNOCHEN = [
+  ['kopf','hals'],
+  ['hals','schulterL'],['hals','schulterR'],
+  ['schulterL','ellbogenL'],['ellbogenL','handL'],
+  ['schulterR','ellbogenR'],['ellbogenR','handR'],
+  ['hals','huefte'],
+  ['huefte','huefteL'],['huefte','huefteR'],
+  ['huefteL','knieL'],['knieL','fussL'],
+  ['huefteR','knieR'],['knieR','fussR']
+];
+
+// Nuancen: pro Gelenk eine eigene Phase
+const NUANCE_PHASE = {};
+let pIdx = 0;
+for (const k in SKELET){
+  NUANCE_PHASE[k] = pIdx * 0.42;
+  pIdx++;
+}
+
+/* ============================================================
+   UPDATE
+   ============================================================ */
+function update(){
+  if (running){
+    pulsPhase += 0.045;
+    time += 1;
+    pulseForce *= 0.92;
+  }
+
+  // Puls: Heartbeat-Kurve 0..1
+  const pulseValue = (Math.sin(pulsPhase) * 0.5 + 0.5);
+
+  // Winkel: tanzt hin und her um Offset
+  const winkel = winkelOffset + Math.sin(pulsPhase * 2) * 25;
+
+  // Nuance: Mikrovariation pro Gelenk
+  const nuance = Math.sin(pulsPhase * 3) * 0.5 + 0.5;
+
+  // Achse: vertikale Stabilität (0..1)
+  const achse = Math.sin(pulsPhase * 1.5) * 0.5 + 0.5;
+
+  // DOM
+  document.getElementById('pulseDisplay').textContent = Math.round(pulseValue * 100);
+  document.getElementById('winkelDisplay').textContent = Math.round(winkel) + '°';
+  document.getElementById('nuanceDisplay').textContent = Math.round(nuance * 100);
+  document.getElementById('achseDisplay').textContent = Math.round(achse * 100);
+  document.getElementById('poseDisplay').textContent = POSES[poseIdx].name;
+  document.getElementById('nuanceStatus').textContent = Math.round(nuance * 100);
+  document.getElementById('poseStatus').textContent = POSES[poseIdx].name;
+
+  const status = pulseValue > 0.7 ? 'tanzt' : pulseValue > 0.3 ? 'schwingt' : 'atmet';
+  document.getElementById('statusText').textContent = running ? status : 'pausiert';
+
+  // Zeit
+  const sec = Math.floor(time / 60);
+  const min = Math.floor(sec / 60);
+  document.getElementById('timeStatus').textContent =
+    String(min).padStart(2,'0') + ':' + String(sec % 60).padStart(2,'0');
+
+  drawScene(pulseValue, winkel, nuance, achse);
+
+  requestAnimationFrame(update);
+}
+
+/* ============================================================
+   ZEICHNEN
+   ============================================================ */
+function drawScene(pulseValue, winkel, nuance, achse){
+  const w = canvas.width, h = canvas.height;
+  const cx = w / 2, cy = h / 2;
+  const scale = Math.min(w, h) * 0.42;
+
+  ctx.clearRect(0, 0, w, h);
+
+  // Hintergrund-Puls
+  const glow = ctx.createRadialGradient(cx, cy, 10, cx, cy, scale * 1.3);
+  const pulseAmt = 0.02 + pulseValue * 0.05;
+  glow.addColorStop(0, 'rgba(255,102,255,' + pulseAmt + ')');
+  glow.addColorStop(0.5, 'rgba(0,204,255,' + (pulseAmt * 0.5) + ')');
+  glow.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, w, h);
+
+  // ACHSE — vertikale Rotationsachse
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth = 0.5;
+  ctx.setLineDash([3, 8]);
+  ctx.beginPath();
+  ctx.moveTo(cx, 20);
+  ctx.lineTo(cx, h - 20);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Achse-Marker (Pfeil oben/unten)
+  ctx.fillStyle = 'rgba(0,255,136,' + (0.3 + achse * 0.4) + ')';
+  ctx.beginPath();
+  ctx.moveTo(cx, 15);
+  ctx.lineTo(cx - 4, 25);
+  ctx.lineTo(cx + 4, 25);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(cx, h - 15);
+  ctx.lineTo(cx - 4, h - 25);
+  ctx.lineTo(cx + 4, h - 25);
+  ctx.closePath();
+  ctx.fill();
+
+  // PULS-Mitte: Herzschlag im Zentrum
+  const pulseR = 4 + pulseValue * 8 + pulseForce * 12;
+  const pulseGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, pulseR * 3);
+  pulseGrad.addColorStop(0, 'rgba(255,102,255,' + (0.3 + pulseValue * 0.4) + ')');
+  pulseGrad.addColorStop(0.5, 'rgba(255,102,255,' + (0.1 + pulseValue * 0.15) + ')');
+  pulseGrad.addColorStop(1, 'rgba(255,102,255,0)');
+  ctx.fillStyle = pulseGrad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, pulseR * 3, 0, Math.PI * 2);
+  ctx.fill();
+
+  /* ============================================================
+     SKELETT-POSITIONEN berechnen
+     Jedes Gelenk: Pose-Einfluss + Puls-Amplitude + Nuance-Phase
+     ============================================================ */
+  const pose = POSES[poseIdx];
+
+  function joint(name){
+    const base = SKELET[name];
+    const phase = NUANCE_PHASE[name] || 0;
+
+    // Puls-Welle: Gelenke schwingen im Puls aber mit Phasenversatz
+    const pulsAmp = 0.02 + pulseValue * 0.04 + pulseForce * 0.06;
+    const pulsOffset = Math.sin(pulsPhase + phase) * pulsAmp;
+    const nuanceOffset = (nuance - 0.5) * 0.03 * Math.sin(phase * 1.7);
+
+    // Arme/B eine heben bei Pose
+    let px = base.x;
+    let py = base.y;
+
+    if (name === 'schulterL' || name === 'ellbogenL' || name === 'handL'){
+      px += pose.armL * 0.15;
+      py -= Math.abs(pose.armL) * 0.1;
+    }
+    if (name === 'schulterR' || name === 'ellbogenR' || name === 'handR'){
+      px += pose.armR * 0.15;
+      py -= Math.abs(pose.armR) * 0.1;
+    }
+
+    // Hüfte je nach Pose
+    if (name === 'huefte' || name === 'huefteL' || name === 'huefteR'){
+      py += pose.hipY - 0.15;
+    }
+    if (name === 'hals'){
+      py += pose.shoulderY - (-0.40);
+    }
+
+    // Lean: ganze Figur neigt sich
+    px += pose.lean * (base.y + 0.5);
+
+    // Puls + Nuance dazu
+    px += pulsOffset + nuanceOffset;
+    py += Math.sin(pulsPhase * 1.3 + phase) * (0.015 + pulseValue * 0.02);
+
+    return { x: px, y: py };
+  }
+
+  // Alle Gelenke berechnen
+  const J = {};
+  for (const k in SKELET) J[k] = joint(k);
+
+  // Winkel: gesamte Figur drehen
+  const angle = (winkel * Math.PI) / 180;
+  const cosA = Math.cos(angle);
+  const sinA = Math.sin(angle);
+
+  function rotate(p){
+    return {
+      x: p.x * cosA - p.y * sinA,
+      y: p.x * sinA + p.y * cosA
     };
+  }
 
-    // 1 — B/H/T laden
-    const B = await PQ.load("B");
-    const H = await PQ.load("H");
-    const T = await PQ.load("T");
+  // Transform: relativ → canvas-Pixel
+  function toPx(p){
+    return {
+      x: cx + p.x * scale,
+      y: cy + p.y * scale
+    };
+  }
 
-    // 2 — verify starten
-    const verify = PQ.verify([B, H, T]);
+  const P = {};
+  for (const k in J) P[k] = toPx(rotate(J[k]));
 
-    // 3 — Pipeline aktivieren
-    const pipeline = Pipeline.run({
-        qi: B,
-        iqq: H,
-        engine: T,
-        verify
-    });
+  /* ============================================================
+     KNOCHEN zeichnen (Skelett als Silhouette)
+     ============================================================ */
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+  for (const [a, b] of KNOCHEN){
+    const pa = P[a], pb = P[b];
+    ctx.beginPath();
+    ctx.moveTo(pa.x, pa.y);
+    ctx.lineTo(pb.x, pb.y);
+    ctx.stroke();
+  }
 
-    // 4 — respo aktivieren
-    const respoResult = respo.execute(pipeline);
+  /* ============================================================
+     HEMD — hängt an Schultern und Armen
+     ============================================================ */
+  ctx.shadowColor = 'rgba(204,221,136,0.2)';
+  ctx.shadowBlur = 25;
+  ctx.fillStyle = 'rgba(204,221,136,0.18)';
+  ctx.strokeStyle = 'rgba(204,221,136,0.5)';
+  ctx.lineWidth = 1.5;
 
-    // 5 — Achse 6 erkennen
-    const achse6 = PQ.achse6([B, H, T]);
+  // Hemd-Körper: SchulterL, SchulterR, EllbogenL, EllbogenR (Fläche)
+  ctx.beginPath();
+  ctx.moveTo(P.schulterL.x, P.schulterL.y);
+  ctx.lineTo(P.schulterR.x, P.schulterR.y);
+  ctx.lineTo(P.ellbogenR.x, P.ellbogenR.y);
+  ctx.lineTo(P.ellbogenL.x, P.ellbogenL.y);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
 
-    // 6 — Achse 12 vorbereiten
-    const achse12 = PQ.achse12(achse6);
+  // Ärmel bis Handgelenk (Ellbogen → Hand als Ellipse)
+  for (const [eb, hand] of [['ellbogenL','handL'],['ellbogenR','handR']]){
+    const pe = P[eb], ph = P[hand];
+    const mx = (pe.x + ph.x) / 2;
+    const my = (pe.y + ph.y) / 2;
+    const dx = ph.x - pe.x;
+    const dy = ph.y - pe.y;
+    const len = Math.hypot(dx, dy);
+    const ang = Math.atan2(dy, dx);
 
-})();
+    ctx.save();
+    ctx.translate(mx, my);
+    ctx.rotate(ang);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, len / 2, Math.max(6, len * 0.18), 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Kragen am Hals
+  ctx.beginPath();
+  ctx.ellipse(P.hals.x, P.hals.y, 10, 6, 0, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(204,221,136,0.3)';
+  ctx.fill();
+  ctx.stroke();
+
+  /* ============================================================
+     HOSE — hängt an Hüfte und Beinen
+     ============================================================ */
+  ctx.shadowColor = 'rgba(136,170,204,0.2)';
+  ctx.shadowBlur = 25;
+  ctx.fillStyle = 'rgba(136,170,204,0.18)';
+  ctx.strokeStyle = 'rgba(136,170,204,0.5)';
+  ctx.lineWidth = 1.5;
+
+  // Hose-Körper: HüfteL, HüfteR, KnieL, KnieR
+  ctx.beginPath();
+  ctx.moveTo(P.huefteL.x, P.huefteL.y);
+  ctx.lineTo(P.huefteR.x, P.huefteR.y);
+  ctx.lineTo(P.knieR.x, P.knieR.y);
+  ctx.lineTo(P.knieL.x, P.knieL.y);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // Hosenbeine bis Fuß
+  for (const [kn, fu] of [['knieL','fussL'],['knieR','fussR']]){
+    const pk = P[kn], pf = P[fu];
+    const mx = (pk.x + pf.x) / 2;
+    const my = (pk.y + pf.y) / 2;
+    const dx = pf.x - pk.x;
+    const dy = pf.y - pk.y;
+    const len = Math.hypot(dx, dy);
+    const ang = Math.atan2(dy, dx);
+
+    ctx.save();
+    ctx.translate(mx, my);
+    ctx.rotate(ang);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, len / 2, Math.max(6, len * 0.22), 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Gürtel
+  ctx.beginPath();
+  ctx.ellipse(P.huefte.x, P.huefte.y, 16, 6, 0, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(136,170,204,0.35)';
+  ctx.fill();
+  ctx.stroke();
+
+  /* ============================================================
+     KOPF — als kleiner Kreis
+     ============================================================ */
+  ctx.shadowBlur = 15;
+  ctx.fillStyle = 'rgba(255,255,255,0.08)';
+  ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(P.kopf.x, P.kopf.y, 12, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  /* ============================================================
+     NUANCEN — fließende Punkte entlang der Figur
+     ============================================================ */
+  ctx.shadowBlur = 0;
+  for (let i = 0; i < 9; i++){
+    const t = i / 9;
+    const phase = pulsPhase + i * 0.5;
+    const wobbleX = Math.sin(phase) * 12;
+    const wobbleY = Math.cos(phase * 1.3) * 8;
+
+    // Position entlang der vertikalen Achse, verstreut
+    const px = cx + wobbleX + (Math.random() - 0.5) * 2;
+    const py = cy - scale * 0.5 + t * scale + wobbleY;
+
+    const alpha = 0.06 + nuance * 0.15;
+    ctx.fillStyle = 'rgba(255,170,0,' + alpha + ')';
+    ctx.beginPath();
+    ctx.arc(px, py, 2 + nuance * 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  /* ============================================================
+     ACHSE-MARKER an Gelenken (Puls läuft hindurch)
+     ============================================================ */
+  ctx.shadowBlur = 8;
+  for (const k in P){
+    const p = P[k];
+    const pulseAtJoint = Math.sin(pulsPhase + NUANCE_PHASE[k]) * 0.5 + 0.5;
+    ctx.fillStyle = 'rgba(0,255,136,' + (0.15 + pulseAtJoint * 0.3) + ')';
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 2 + pulseAtJoint * 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.shadowBlur = 0;
+
+  /* ============================================================
+     INFO
+     ============================================================ */
+  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  ctx.font = '9px monospace';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'bottom';
+  ctx.fillText('🧥 PULS ' + Math.round(pulseValue * 100) + ' · NUANCE ' + Math.round(nuance * 100), 10, h - 10);
+
+  ctx.textAlign = 'right';
+  ctx.fillText('∠ ' + Math.round(winkel) + '° · ' + POSES[poseIdx].name, w - 10, h - 10);
+}
+
+/* ============================================================
+   PROOF
+   ============================================================ */
+function showProof(){
+  const pulse = document.getElementById('pulseDisplay').textContent;
+  const winkel = document.getElementById('winkelDisplay').textContent;
+  const nuance = document.getElementById('nuanceDisplay').textContent;
+  const achse = document.getElementById('achseDisplay').textContent;
+  const pose = POSES[poseIdx].name;
+
+  const modal = document.createElement('div');
+  modal.className = 'proof-modal';
+  modal.innerHTML = `
+    <div class="inner">
+      <div class="em">🧥</div>
+      <div class="title">AXIOM · STOFF · TANZ</div>
+      <div class="vals">
+        💓 <b>PULS</b> — ${pulse} %<br>
+        ∠ <b>WINKEL</b> — ${winkel}<br>
+        🎯 <b>NUANCE</b> — ${nuance} %<br>
+        ⚡ <b>ACHSE</b> — ${achse} %<br>
+        ◐ <b>POSE</b> — ${pose}<br>
+      </div>
+      <div class="foot">
+        SCHLAPPE HOSEN & HEMDEN<br>
+        AN EINEM TANZENDEN KÖRPER<br>
+        14 KNOCHEN · 15 GELENKE · 4 POSEN
+      </div>
+      <button onclick="this.closest('.proof-modal').remove()">⏎ SCHLIESSEN</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+/* ============================================================
+   CONTROLS
+   ============================================================ */
+document.getElementById('btnStart').addEventListener('click', () => {
+  running = !running;
+  const btn = document.getElementById('btnStart');
+  btn.classList.toggle('active', running);
+  btn.textContent = running ? '▶ START' : '⏸ PAUSE';
+});
+
+document.getElementById('btnPuls').addEventListener('click', () => {
+  // Puls-Boost: temporär stärkerer Puls
+  pulseForce = 1.5;
+  pulsPhase += 0.3;
+});
+
+document.getElementById('btnWinkel').addEventListener('click', () => {
+  // Winkel-Offset: ganze Figur 15° weiter drehen
+  winkelOffset = (winkelOffset + 15) % 360;
+});
+
+document.getElementById('btnPose').addEventListener('click', () => {
+  // Nächste Pose
+  poseIdx = (poseIdx + 1) % POSES.length;
+});
+
+document.getElementById('btnProof').addEventListener('click', showProof);
+
+document.getElementById('btnReset').addEventListener('click', () => {
+  pulsPhase = 0;
+  winkelOffset = 0;
+  poseIdx = 0;
+  pulseForce = 0;
+  time = 0;
+});
+
+// Tastatur
+document.addEventListener('keydown', (e) => {
+  if (e.key === ' '){ e.preventDefault(); document.getElementById('btnStart').click(); }
+  if (e.key === 'p' || e.key === 'P') document.getElementById('btnPuls').click();
+  if (e.key === 'w' || e.key === 'W') document.getElementById('btnWinkel').click();
+  if (e.key === 'o' || e.key === 'O') document.getElementById('btnPose').click();
+  if (e.key === 'x' || e.key === 'X') document.getElementById('btnProof').click();
+  if (e.key === 'r' || e.key === 'R') document.getElementById('btnReset').click();
+});
+
+/* ============================================================
+   RESIZE
+   ============================================================ */
+function resizeCanvas(){
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const size = Math.min(rect.width, rect.height, 550);
+  canvas.width = size;
+  canvas.height = size;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+setTimeout(resizeCanvas, 150);
+
+update();
+console.log('🧥 AXIOM · STOFF · TANZ · KONSEQUENZIERT');
+console.log('14 Knochen · 15 Gelenke · 4 Posen · Puls-Welle durch alle');
 </script>
+</body>
+</html>
