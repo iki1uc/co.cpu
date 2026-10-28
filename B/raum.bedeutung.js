@@ -1,10 +1,6 @@
-// k-rper-differenz-6.csv → direkt Dateien = besser
-const körper = {
-  U: { differenz: "universell", file: "ich.respo.!.js = universell = Sonne = ID !" },
-  EU: { differenz: "kollektiv", file: "motor.xyz.js = kollektiv = VEC9_MOTOR" },
-  RE: { differenz: "rücklauf", file: "spiegel.alt.neu.live.js = rücklauf = ECHO" },
-  UreE: { differenz: "ur-energie", file: "ur.energie.js = Ur-Energie = Sonne" },
-  "ME/RE": { differenz: "fusion", file: "fusion.js = ATOM Fusion = eye2eye" },
-  UxDU: { differenz: "stabilisator", file: "anker.stabil.js = Stabilisator = ANKER STABIL" }
+// raum.bedeutung.js richtig = Raum,Bedeutung,Inhalt
+const raum = {
+  "B.room": { bedeutung: "Basis", inhalt: "Achsen, Gesetze, Geometrie" },
+  "h.room": { bedeutung: "Höhe", inhalt: "Shader, Elemente, Narrative" },
+  "T.room": { bedeutung: "Terminal", inhalt: "Pipeline, Station, Engine, ÜΩ" }
 };
-// Dann k-rper-differenz-6.csv löschen, nur noch direkte Dateien
