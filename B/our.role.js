@@ -1,4 +1,3 @@
-// d-bedeutung-6.csv → direkt Dateien = besser
 const d = {
   d1: { bedeutung: "ROOT", link: "ROOT", file: "ich.respo.!.js" },
   d2: { bedeutung: "Achse", link: "Achse", file: "achsen.js" },
@@ -7,4 +6,3 @@ const d = {
   d5: { bedeutung: "Raum", link: "RAUM", file: "raum.js" },
   d6: { bedeutung: "Virtuelle Achse", link: "Virtuelle_Achse", file: "virtuelle.achse.js" }
 };
-// Dann d-bedeutung-6.csv löschen, nur noch direkte Dateien = Funktion erklärt Namen
