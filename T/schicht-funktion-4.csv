@@ -1,5 +1,0 @@
-﻿Schicht,Funktion,Datei‑Gruppe
-1. Input,TMP‑respos,TMP‑Räume
-2. Process,PQ,PQ.core / PQ.sort / PQ.verify
-3. Function,respo,respo‑achse / respo‑funktion
-4. Output,RE‑respos,RE‑Räume
